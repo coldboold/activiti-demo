@@ -26,7 +26,7 @@ public class TaskController {
 
     @ApiOperation(value="获取用户所有任务")
     @GetMapping()
-    public DemoVO getTask(@PathParam("username") String username) {
+    public DemoVO getTask(String username) {
         List<Task> list = this.taskService
                 .createTaskQuery()
                 .taskAssignee(username)

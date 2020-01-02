@@ -39,13 +39,61 @@
 |ManagementService|Management Service 提供了对 Activiti 流程引擎的管理和维护功能，这些功能不在工作流驱动的应用程序中使用，主要用于 Activiti 系统的日常维护。|
 |HistoryService|History Service 用于获取正在运行或已经完成的流程实例的信息，与 Runtime Service 中获取的流程信息不同，历史信息包含已经持久化存储的永久信息，并已经被针对查询优化。|
 
- [内网 swagger 访问地址 192.168.0.191:9000/swagger-ui.html](http://192.168.0.191:9000/swagger-ui.html)
+[详细参考文档](https://www.jianshu.com/p/684e11224c9b)
+
+[内网 swagger 访问地址 192.168.0.191:9000/swagger-ui.html](http://192.168.0.191:9000/swagger-ui.html)
+ 
+### 一个流程从 设计→部署→启动 的步骤梳理
+>
+> 第一步，设计流程图，创建流程文件 .bpmn 文件
+> 
+> 文件包括了 流程 key，任务流，每个任务节点(task)设置唯一的 key 以及任务办理人(assignee),
+> 任务代理人可以直接指定也可以动态指定，如何动态指定，请看下面详解
+>
+> 第二步，部署流程，根据文件部署流程，可以通过.xml、.bpmn 以及 zip 几个方式部署流程，
+>部署的流程将会以二进制的形式存储在数据库表中
+>
+> 第三步，启动流程，启动流程时使用到Activiti提供的RuntimeService，通过流程图设计时的 key 值进行启动
+>
+ 
  
  遇到的问题：
  
 >
-> 1. 设计流程图的时候流程任务需要指定任务办理人（ASSIGNEE），但是实际应用上是流程启动的时候才会指定办理人，如何在启动流程时动态的设置办理人
-> 
-> 2. Activiti7 中去除了 FormService 所以还不清楚流程任务表单如何设计，如何生成动态表单
->
-> 3. 流程正在运行中，更换流程模型，流程是否会发生改变，会发生什么改变
+> ##### 1.设计流程图的时候流程任务需要指定任务办理人（ASSIGNEE），但是实际应用上是流程启动的时候才会指定办理人，如何在启动流程时动态的设置办理人
+>>
+>> 解决方案：使用IEL表达式，在启动流程时设置办理人
+>>
+>> UEL 表达式在bpmn文件里面的写法
+>> 
+>> ![image](./doc/images/assigneeSetUEL.jpg)
+>>
+>> 在设计流程图的时候设定了UEL表达式，然后在流程启动的时候动态的设置对应表达式准确的值
+>>
+>>
+>> ```java
+>> public class ProcessController {
+>>     public DemoVO startProcessInstance(@PathVariable String key, String username) {
+>>         Map<String,Object> map = new HashMap<>();
+>>         // key 为UEL表达式的变量名，value为将要为表达式设置的准确的值
+>>         map.put("assignee0", username);
+>>         /**
+>>          * startProcessInstanceByKey(key, map);
+>>          * 该函数为根据流程 key 来启动一个流程实例
+>>          * 其中第二个值就是启动流程时要被动态设置的变量名和值
+>>          * 可以设置多个表达式变量
+>>          */
+>>         ProcessInstance processInstance = this.runtimeService.startProcessInstanceByKey(key, map);
+>>         return DemoVO.success(process);
+>>     }
+>> }
+>> ```
+> ##### 2.Activiti7 中去除了 FormService 所以还不清楚流程任务表单如何设计，如何生成动态表单
+>> 
+>> 从教程视频中得知，Activiti 为了更加专注于自身的业务流程管理，所以删除了FromService，认为表单应该归属于
+>> 业务系统自身的业务，但是如何解决该问题，还需后续继续学习。
+>> 
+> ##### 3.流程正在运行中，更换流程模型，流程是否会发生改变，会发生什么改变
+>> 网上查了很多但是没有具体的答案
+>> 具体会造成什么样的影响还需要后期demo的实验测试探索才能得知
+>> 

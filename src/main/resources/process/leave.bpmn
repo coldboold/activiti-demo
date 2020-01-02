@@ -2,9 +2,9 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="m1577635100724" name="" targetNamespace="http://www.activiti.org/testm1577635100724" typeLanguage="http://www.w3.org/2001/XMLSchema">
   <process id="leave" isClosed="false" isExecutable="true" processType="None">
     <startEvent id="_2" name="StartEvent"/>
-    <userTask activiti:exclusive="true" id="from" name="Fill in the leave form"/>
+    <userTask activiti:assignee="${assignee0}" activiti:exclusive="true" id="from" name="Fill in the leave form"/>
     <userTask activiti:assignee="zhangsan" activiti:exclusive="true" id="approval_1" name="Zhang San approval"/>
-    <userTask activiti:exclusive="true" id="approval_2" name="Li Si approval"/>
+    <userTask activiti:assignee="lisi" activiti:exclusive="true" id="approval_2" name="Li Si approval"/>
     <endEvent id="_6" name="EndEvent"/>
     <sequenceFlow id="_7" sourceRef="_2" targetRef="from"/>
     <sequenceFlow id="_8" sourceRef="approval_1" targetRef="approval_2"/>

@@ -4,7 +4,7 @@ package com.example.demo.util;
  * 工作流枚举类
  * @author zhipeng.zhang
  */
-public enum BpmsActivityTypeEnum {
+public enum BpmnActivityTypeEnum {
     
     START_EVENT("startEvent", "开始事件"),
     END_EVENT("endEvent", "结束事件"),
@@ -16,7 +16,7 @@ public enum BpmsActivityTypeEnum {
     private String type;
     private String name;
     
-    private BpmsActivityTypeEnum(String type, String name) {
+    private BpmnActivityTypeEnum(String type, String name) {
         this.type = type;
         this.name = name;
     }

@@ -1,43 +1,23 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Process;
-import com.example.demo.util.ActivitiUtils;
-import com.example.demo.util.FlowUtils;
+import com.example.demo.entity.RuntimeProcess;
 import com.example.demo.vo.DemoVO;
-import io.micrometer.core.instrument.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricActivityInstanceQuery;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.image.ProcessDiagramGenerator;
-import org.activiti.image.impl.DefaultProcessDiagramGenerator;
-import org.apache.commons.io.IOUtils;
+import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author winily
@@ -48,16 +28,20 @@ import java.util.stream.Collectors;
 @Api(tags = "流程管理")
 public class ProcessController {
     // 资源服务
-    @Autowired
-    private RepositoryService repositoryService;
-
+    private final RepositoryService repositoryService;
     // 运行服务
-    @Autowired
-    private RuntimeService runtimeService;
-
+    private final RuntimeService runtimeService;
     // 历史服务
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
+
+    private final TaskService taskService;
+
+    public ProcessController(HistoryService historyService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService) {
+        this.historyService = historyService;
+        this.repositoryService = repositoryService;
+        this.runtimeService = runtimeService;
+        this.taskService = taskService;
+    }
 
     @ApiOperation(value = "根据Key启动流程")
     @PostMapping("{key}")
@@ -89,47 +73,21 @@ public class ProcessController {
                 .orderByProcessDefinitionVersion()
                 .asc()
                 .list();
-
-        System.out.println("historyService" + this.historyService);
-
         List<Process> processes = new ArrayList<>();
-
         if (processDefinitionList != null && processDefinitionList.size() > 0) {
             for (ProcessDefinition pd : processDefinitionList) {
                 Process process = new Process(pd);
                 String deploymentId = pd.getDeploymentId();
                 Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
                 process.setDeploymentTime(deployment.getDeploymentTime());
+                process.setName(deployment.getName());
                 processes.add(process);
             }
         }
-
-
         return DemoVO.success(processes);
     }
 
 
-    @Autowired
-    private FlowUtils flowUtils;
-    /**
-     * <p>查看当前流程图</p>
-     *
-     * @param instanceId 流程实例
-     * @param response   void 响应
-     * @author FRH
-     * @time 2018年12月10日上午11:14:12
-     * @version 1.0
-     */
-    @ResponseBody
-    @ApiOperation(value = "查看流程图")
-    @GetMapping(value = "/showImg")
-    public ResponseEntity traceprocess(HttpServletResponse response, @RequestParam("instanceId") String instanceId) throws Exception {
 
-        System.out.println(instanceId);
-        InputStream in = this.flowUtils.getResourceDiagramInputStream(instanceId);
-        System.out.println("in" + in);
-        InputStreamResource inputStreamResource = new InputStreamResource(in);
-        return new ResponseEntity<>(inputStreamResource, new HttpHeaders(), HttpStatus.OK);
-    }
 
 }

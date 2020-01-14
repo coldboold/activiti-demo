@@ -5,7 +5,6 @@ import org.activiti.bpmn.model.FlowNode;
 import org.activiti.bpmn.model.SequenceFlow;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.image.ProcessDiagramGenerator;
@@ -43,36 +42,13 @@ public class FlowUtils {
      */
     public InputStream getResourceDiagramInputStream(String id) {
         try {
-            System.out.println("getResourceDiagramInputStream: " + id);
             // 获取历史流程实例
-            HistoricProcessInstance historicProcessInstance = null;
-            try{
-                System.out.println("循环");
-                List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
-                        .orderByProcessInstanceId()
-                        .asc()
-                        .list();
+            HistoricProcessInstance historicProcessInstance = historyService
+                    .createHistoricProcessInstanceQuery()
+                    .processInstanceId(id)
+                    .singleResult();
 
-                System.out.println("循环" + list);
-
-                list.forEach(p -> {
-                    System.out.println("循环中");
-                    System.out.println("p.getProcessDefinitionId() " + p.getProcessDefinitionId());
-                    System.out.println("p.getName() " + p.getName());
-                    System.out.println("p.getId() " + p.getId());
-                });
-                System.out.println("循环结束");
-
-
-                historyService
-                        .createHistoricProcessInstanceQuery()
-                        .processInstanceId(id)
-                        .singleResult();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             System.out.println("getResourceDiagramInputStream hello");
-            System.out.println(historicProcessInstance.getName() + " 111 \n" + historicProcessInstance.getProcessDefinitionId() + "\n" + historicProcessInstance.getDeploymentId());
             // 获取流程中已经执行的节点，按照执行先后顺序排序
             List<HistoricActivityInstance> historicActivityInstanceList = historyService.createHistoricActivityInstanceQuery().processInstanceId(id).orderByHistoricActivityInstanceId().asc().list();
             // 构造已执行的节点ID集合
@@ -82,6 +58,7 @@ public class FlowUtils {
                 executedActivityIdList.add(activityInstance.getActivityId());
             }
             // 获取bpmnModel
+            System.out.println("historicProcessInstance.getProcessDefinitionId() --- " + historicProcessInstance.getProcessDefinitionId());
             BpmnModel bpmnModel = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId());
             // 获取流程已发生流转的线ID集合
             List<String> flowIds = this.getExecutedFlows(bpmnModel, historicActivityInstanceList);
@@ -90,7 +67,15 @@ public class FlowUtils {
             //你也可以 new 一个
             //DefaultProcessDiagramGenerator processDiagramGenerator = new DefaultProcessDiagramGenerator();
 
-            InputStream inputStream = processDiagramGenerator.generateDiagram(bpmnModel, executedActivityIdList, flowIds);
+            InputStream inputStream = processDiagramGenerator.generateDiagram(bpmnModel,
+                    executedActivityIdList,
+                    flowIds,
+                    "宋体",
+                    "微软雅黑",
+                    "黑体",
+                    true,
+                    "default");
+
             return inputStream;
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,11 +85,11 @@ public class FlowUtils {
 
     private List<String> getExecutedFlows(BpmnModel bpmnModel, List<HistoricActivityInstance> historicActivityInstances) {
         // 流转线ID集合
-        List<String> flowIdList = new ArrayList<String>();
+        List<String> flowIdList = new ArrayList<>();
         // 全部活动实例
-        List<FlowNode> historicFlowNodeList = new LinkedList<FlowNode>();
+        List<FlowNode> historicFlowNodeList = new LinkedList<>();
         // 已完成的历史活动节点
-        List<HistoricActivityInstance> finishedActivityInstanceList = new LinkedList<HistoricActivityInstance>();
+        List<HistoricActivityInstance> finishedActivityInstanceList = new LinkedList<>();
         for (HistoricActivityInstance historicActivityInstance : historicActivityInstances) {
             historicFlowNodeList.add((FlowNode) bpmnModel.getMainProcess().getFlowElement(historicActivityInstance.getActivityId(), true));
             if (historicActivityInstance.getEndTime() != null) {
@@ -124,8 +109,8 @@ public class FlowUtils {
              * 2.当前节点是以上两种类型之外的，通过outgoingFlows查找到的时间最近的流转节点视为有效流转
              */
             FlowNode targetFlowNode = null;
-            if (BpmsActivityTypeEnum.PARALLEL_GATEWAY.getType().equals(currentActivityInstance.getActivityType())
-                    || BpmsActivityTypeEnum.INCLUSIVE_GATEWAY.getType().equals(currentActivityInstance.getActivityType())) {
+            if (BpmnActivityTypeEnum.PARALLEL_GATEWAY.getType().equals(currentActivityInstance.getActivityType())
+                    || BpmnActivityTypeEnum.INCLUSIVE_GATEWAY.getType().equals(currentActivityInstance.getActivityType())) {
                 // 遍历历史活动节点，找到匹配Flow目标节点的
                 for (SequenceFlow sequenceFlow : sequenceFlowList) {
                     targetFlowNode = (FlowNode) bpmnModel.getMainProcess().getFlowElement(sequenceFlow.getTargetRef(), true);
@@ -134,7 +119,7 @@ public class FlowUtils {
                     }
                 }
             } else {
-                List<Map<String, String>> tempMapList = new LinkedList<Map<String, String>>();
+                List<Map<String, String>> tempMapList = new LinkedList<>();
                 // 遍历历史活动节点，找到匹配Flow目标节点的
                 for (SequenceFlow sequenceFlow : sequenceFlowList) {
                     for (HistoricActivityInstance historicActivityInstance : historicActivityInstances) {

@@ -21,4 +21,11 @@ public class DemoVO {
         return demoVO;
     }
 
+    public static DemoVO success() {
+        DemoVO demoVO = new DemoVO();
+        demoVO.setCode(200);
+        demoVO.setMsg("success");
+        return demoVO;
+    }
+
 }

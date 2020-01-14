@@ -28,10 +28,10 @@ class ActivitiDemoApplicationTests {
     void contextLoads() {
         Deployment leave = this.repositoryService
                 .createDeployment()
-                .addClasspathResource("process/normalization.bpmn")
-                .name("转正流程")
+                .addClasspathResource("process/leave.bpmn")
+                .name("请假流程")
                 .deploy();
-//        System.out.println(leave.getName());
+        System.out.println(leave.getName());
         // DeploymentEntity[id=03b83179-2aa3-11ea-8d1e-1c1b0ddbc473, name=请假流程]
 
 //        Task leave = this.taskService

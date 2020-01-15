@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/processdef">
+    <process id="admin_resign" name="离职申请审批流程" isExecutable="true">
+        <documentation>
+            员工离职申请审批流程
+        </documentation>
+        <startEvent id="start" name="提交申请" activiti:initiator="apply" activiti:formKey="/admin/resign/form">
+            <documentation>
+                员工离职申请
+            </documentation>
+        </startEvent>
+        <userTask id="audit_dept" name="部门经理审批" activiti:candidateGroups="${apply_dept}"
+                  activiti:formKey="/admin/resign/auditDept">
+            <documentation>
+                部门经理审批
+            </documentation>
+        </userTask>
+        <exclusiveGateway id="sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5"/>
+        <userTask id="modify" name="修改" activiti:assignee="${apply}"/>
+        <sequenceFlow id="sid-618928AF-E6CF-4308-9ACB-460408CFA96A" sourceRef="start" targetRef="audit_dept"/>
+        <userTask id="general_audit" name="总经理审批" activiti:assignee="zzy002" activiti:formKey="/admin/resign/audit">
+            <documentation>
+                总经理审批
+            </documentation>
+        </userTask>
+        <endEvent id="end" name="结束"/>
+        <exclusiveGateway id="sid-A72A5CA6-231E-4327-B360-885944B97AED"/>
+        <exclusiveGateway id="sid-218F1647-F2E2-4816-84FA-E25B9F904E9C"/>
+        <sequenceFlow id="sid-429ADF3F-9866-42DB-9DD8-49FB48D1128A" sourceRef="modify"
+                      targetRef="sid-218F1647-F2E2-4816-84FA-E25B9F904E9C"/>
+        <sequenceFlow id="sid-A763B32C-ACFA-4801-A34D-FF5BC0A382A4" sourceRef="audit_dept"
+                      targetRef="sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5"/>
+        <sequenceFlow id="sid-0F7DBA79-B460-487D-A1B1-AE079DD804DB" name="否"
+                      sourceRef="sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5" targetRef="modify">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-0D29343D-A32A-4CAC-AADE-CA17ABC4C181" name="销毁"
+                      sourceRef="sid-218F1647-F2E2-4816-84FA-E25B9F904E9C" targetRef="end">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-37D6B6A1-6ADB-4965-AD32-5DCA691A1C5E" name="重新申请"
+                      sourceRef="sid-218F1647-F2E2-4816-84FA-E25B9F904E9C" targetRef="audit_dept">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <userTask id="audit_hr" name="行政经理审批" activiti:candidateGroups="admt_mgt_admin"
+                  activiti:formKey="/admin/resign/auditHr"/>
+        <exclusiveGateway id="sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD"/>
+        <sequenceFlow id="sid-1FFF6760-3E9A-4FC2-98B0-90626C0A7386" sourceRef="audit_hr"
+                      targetRef="sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD"/>
+        <userTask id="audit_finance" name="财务经理审批" activiti:candidateGroups="finc_mgt"
+                  activiti:formKey="/admin/resign/auditFinance"/>
+        <exclusiveGateway id="sid-0E5CABEF-8AA4-4881-9142-BE633591803B"/>
+        <sequenceFlow id="sid-2284E9FF-E7EE-475B-9D3F-652A38B30FF3" sourceRef="audit_finance"
+                      targetRef="sid-0E5CABEF-8AA4-4881-9142-BE633591803B"/>
+        <userTask id="sid-4A73B17F-4AAD-4422-811E-9EE125806661" name="副总经理" activiti:candidateGroups="general_mgt2"
+                  activiti:formKey="/admin/resign/audit"/>
+        <exclusiveGateway id="sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1"/>
+        <sequenceFlow id="sid-5829295D-A732-4E48-A2A7-6C43C1911FAF" sourceRef="sid-4A73B17F-4AAD-4422-811E-9EE125806661"
+                      targetRef="sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1"/>
+        <sequenceFlow id="sid-1D398241-54D4-4700-932B-47CE6315B803" sourceRef="sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD"
+                      targetRef="modify">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-2B519884-8BA1-45F7-8FDB-AB73B73CF5C0" sourceRef="sid-0E5CABEF-8AA4-4881-9142-BE633591803B"
+                      targetRef="modify">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-95A5A297-813A-44E9-9970-0213ADF31725" sourceRef="sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1"
+                      targetRef="modify">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-A80DC945-83C5-400A-A9F2-0F07A6ECB505" name="否"
+                      sourceRef="sid-A72A5CA6-231E-4327-B360-885944B97AED" targetRef="modify">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==0} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-AE4047AC-1CA4-467E-BA9A-9E362825353C" sourceRef="general_audit"
+                      targetRef="sid-A72A5CA6-231E-4327-B360-885944B97AED"/>
+        <sequenceFlow id="sid-AD19C005-9A22-4DF0-BCD5-443AA3327761" name="是"
+                      sourceRef="sid-A72A5CA6-231E-4327-B360-885944B97AED" targetRef="end">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-2D85B2F0-7304-4647-8041-057D974BE206" sourceRef="sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1"
+                      targetRef="general_audit">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-DE52CB22-8DE3-4FF7-9460-1925D68C7357" sourceRef="sid-0E5CABEF-8AA4-4881-9142-BE633591803B"
+                      targetRef="sid-4A73B17F-4AAD-4422-811E-9EE125806661">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-CC890F08-B175-4765-8700-D5356561EE06" sourceRef="sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD"
+                      targetRef="audit_finance">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-8D9A81F7-541C-4B04-9CCD-15080A9E6BA6" name="是"
+                      sourceRef="sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5" targetRef="audit_hr">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[ ${pass==1} ]]>
+            </conditionExpression>
+        </sequenceFlow>
+    </process>
+    <BPMNDiagram id="BPMNDiagram_admin_resign">
+        <BPMNPlane bpmnElement="admin_resign" id="BPMNPlane_admin_resign">
+            <BPMNShape bpmnElement="start" id="BPMNShape_start">
+                <Bounds height="30.0" width="30.0" x="105.0" y="338.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="audit_dept" id="BPMNShape_audit_dept">
+                <Bounds height="80.0" width="100.0" x="210.0" y="313.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5"
+                       id="BPMNShape_sid-B9AC3D1A-334D-47B9-BC4F-5CDEF94DB5C5">
+                <Bounds height="40.0" width="40.0" x="404.515625" y="333.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="modify" id="BPMNShape_modify">
+                <Bounds height="80.0" width="100.0" x="374.515625" y="171.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="general_audit" id="BPMNShape_general_audit">
+                <Bounds height="80.0" width="100.0" x="1178.4511355654413" y="313.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="end" id="BPMNShape_end">
+                <Bounds height="28.0" width="28.0" x="1438.6286590019674" y="339.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-A72A5CA6-231E-4327-B360-885944B97AED"
+                       id="BPMNShape_sid-A72A5CA6-231E-4327-B360-885944B97AED">
+                <Bounds height="40.0" width="40.0" x="1323.9667605654413" y="333.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-218F1647-F2E2-4816-84FA-E25B9F904E9C"
+                       id="BPMNShape_sid-218F1647-F2E2-4816-84FA-E25B9F904E9C">
+                <Bounds height="40.0" width="40.0" x="404.515625" y="86.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="audit_hr" id="BPMNShape_audit_hr">
+                <Bounds height="80.0" width="100.0" x="495.0" y="313.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD"
+                       id="BPMNShape_sid-DD8230B6-E3F9-4F86-97F7-2ED6FA140DDD">
+                <Bounds height="40.0" width="40.0" x="640.0" y="333.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="audit_finance" id="BPMNShape_audit_finance">
+                <Bounds height="80.0" width="100.0" x="725.0" y="313.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-0E5CABEF-8AA4-4881-9142-BE633591803B"
+                       id="BPMNShape_sid-0E5CABEF-8AA4-4881-9142-BE633591803B">
+                <Bounds height="40.0" width="40.0" x="870.0" y="333.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-4A73B17F-4AAD-4422-811E-9EE125806661"
+                       id="BPMNShape_sid-4A73B17F-4AAD-4422-811E-9EE125806661">
+                <Bounds height="80.0" width="100.0" x="955.0" y="313.0"/>
+            </BPMNShape>
+            <BPMNShape bpmnElement="sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1"
+                       id="BPMNShape_sid-14C1C717-FC71-477B-A1C7-4DE1001C6FA1">
+                <Bounds height="40.0" width="40.0" x="1100.0" y="333.0"/>
+            </BPMNShape>
+            <BPMNEdge bpmnElement="sid-A763B32C-ACFA-4801-A34D-FF5BC0A382A4"
+                      id="BPMNEdge_sid-A763B32C-ACFA-4801-A34D-FF5BC0A382A4">
+                <waypoint x="310.0" y="353.0"/>
+                <waypoint x="404.515625" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-A80DC945-83C5-400A-A9F2-0F07A6ECB505"
+                      id="BPMNEdge_sid-A80DC945-83C5-400A-A9F2-0F07A6ECB505">
+                <waypoint x="1343.8315178612465" y="333.1352427041947"/>
+                <waypoint x="1343.0" y="211.0"/>
+                <waypoint x="474.515625" y="211.0"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="1343.8315178612465" y="333.1352427041947"/>
+                </BPMNLabel>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-CC890F08-B175-4765-8700-D5356561EE06"
+                      id="BPMNEdge_sid-CC890F08-B175-4765-8700-D5356561EE06">
+                <waypoint x="680.0" y="353.0"/>
+                <waypoint x="725.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-429ADF3F-9866-42DB-9DD8-49FB48D1128A"
+                      id="BPMNEdge_sid-429ADF3F-9866-42DB-9DD8-49FB48D1128A">
+                <waypoint x="424.515625" y="171.0"/>
+                <waypoint x="424.515625" y="126.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-2284E9FF-E7EE-475B-9D3F-652A38B30FF3"
+                      id="BPMNEdge_sid-2284E9FF-E7EE-475B-9D3F-652A38B30FF3">
+                <waypoint x="825.0" y="353.0"/>
+                <waypoint x="870.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-95A5A297-813A-44E9-9970-0213ADF31725"
+                      id="BPMNEdge_sid-95A5A297-813A-44E9-9970-0213ADF31725">
+                <waypoint x="1120.0" y="333.0"/>
+                <waypoint x="1120.0" y="211.0"/>
+                <waypoint x="474.515625" y="211.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-AE4047AC-1CA4-467E-BA9A-9E362825353C"
+                      id="BPMNEdge_sid-AE4047AC-1CA4-467E-BA9A-9E362825353C">
+                <waypoint x="1278.4511355654413" y="353.0"/>
+                <waypoint x="1323.9667605654413" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-2B519884-8BA1-45F7-8FDB-AB73B73CF5C0"
+                      id="BPMNEdge_sid-2B519884-8BA1-45F7-8FDB-AB73B73CF5C0">
+                <waypoint x="890.0" y="333.0"/>
+                <waypoint x="890.0" y="211.0"/>
+                <waypoint x="474.515625" y="211.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-DE52CB22-8DE3-4FF7-9460-1925D68C7357"
+                      id="BPMNEdge_sid-DE52CB22-8DE3-4FF7-9460-1925D68C7357">
+                <waypoint x="910.0" y="353.0"/>
+                <waypoint x="955.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-0F7DBA79-B460-487D-A1B1-AE079DD804DB"
+                      id="BPMNEdge_sid-0F7DBA79-B460-487D-A1B1-AE079DD804DB">
+                <waypoint x="424.515625" y="333.0"/>
+                <waypoint x="424.515625" y="251.0"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="424.515625" y="333.0"/>
+                </BPMNLabel>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-0D29343D-A32A-4CAC-AADE-CA17ABC4C181"
+                      id="BPMNEdge_sid-0D29343D-A32A-4CAC-AADE-CA17ABC4C181">
+                <waypoint x="444.515625" y="106.0"/>
+                <waypoint x="1452.0" y="106.0"/>
+                <waypoint x="1452.5930266233406" y="339.0000453453022"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="444.515625" y="106.0"/>
+                </BPMNLabel>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-1FFF6760-3E9A-4FC2-98B0-90626C0A7386"
+                      id="BPMNEdge_sid-1FFF6760-3E9A-4FC2-98B0-90626C0A7386">
+                <waypoint x="595.0" y="353.0"/>
+                <waypoint x="640.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-618928AF-E6CF-4308-9ACB-460408CFA96A"
+                      id="BPMNEdge_sid-618928AF-E6CF-4308-9ACB-460408CFA96A">
+                <waypoint x="135.0" y="353.0"/>
+                <waypoint x="210.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-37D6B6A1-6ADB-4965-AD32-5DCA691A1C5E"
+                      id="BPMNEdge_sid-37D6B6A1-6ADB-4965-AD32-5DCA691A1C5E">
+                <waypoint x="404.515625" y="106.0"/>
+                <waypoint x="260.0" y="106.0"/>
+                <waypoint x="260.0" y="313.0"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="404.515625" y="106.0"/>
+                </BPMNLabel>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-2D85B2F0-7304-4647-8041-057D974BE206"
+                      id="BPMNEdge_sid-2D85B2F0-7304-4647-8041-057D974BE206">
+                <waypoint x="1140.0" y="353.0"/>
+                <waypoint x="1178.4511355654413" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-8D9A81F7-541C-4B04-9CCD-15080A9E6BA6"
+                      id="BPMNEdge_sid-8D9A81F7-541C-4B04-9CCD-15080A9E6BA6">
+                <waypoint x="444.515625" y="353.0"/>
+                <waypoint x="495.0" y="353.0"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="444.515625" y="353.0"/>
+                </BPMNLabel>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-5829295D-A732-4E48-A2A7-6C43C1911FAF"
+                      id="BPMNEdge_sid-5829295D-A732-4E48-A2A7-6C43C1911FAF">
+                <waypoint x="1055.0" y="353.0"/>
+                <waypoint x="1100.0" y="353.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-1D398241-54D4-4700-932B-47CE6315B803"
+                      id="BPMNEdge_sid-1D398241-54D4-4700-932B-47CE6315B803">
+                <waypoint x="660.0" y="333.0"/>
+                <waypoint x="660.0" y="211.0"/>
+                <waypoint x="474.515625" y="211.0"/>
+            </BPMNEdge>
+            <BPMNEdge bpmnElement="sid-AD19C005-9A22-4DF0-BCD5-443AA3327761"
+                      id="BPMNEdge_sid-AD19C005-9A22-4DF0-BCD5-443AA3327761">
+                <waypoint x="1363.9667605654413" y="353.0"/>
+                <waypoint x="1438.6286590019674" y="353.0"/>
+                <BPMNLabel>
+                    <Bounds height="0.0" width="0.0" x="1363.9667605654413" y="353.0"/>
+                </BPMNLabel>
+            </BPMNEdge>
+        </BPMNPlane>
+    </BPMNDiagram>
+</definitions>

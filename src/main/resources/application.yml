@@ -1,11 +1,20 @@
 server:
   port: 9000
+  tomcat:
+    uri-encoding: UTF-8
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/activity?useUnicode=true&characterEncoding=utf-8
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+  http:
+    encoding:
+      charset: utf-8
+      enabled: true
+  servlet:
+    multipart:
+      enabled: true
   # Activiti 配置
   activiti:
     database-schema-update: true

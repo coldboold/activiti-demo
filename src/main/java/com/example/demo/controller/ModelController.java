@@ -8,17 +8,16 @@ import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.springframework.core.io.Resource;
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -83,4 +82,31 @@ public class ModelController {
         return DemoVO.success(list);
     }
 
+    @DeleteMapping("/{id}")
+    @ApiOperation(value = "删除模型")
+    public DemoVO deleteModel(@PathVariable("id") String id) {
+        this.repositoryService.deleteModel(id);
+        return DemoVO.success();
+    }
+
+    @GetMapping("/bpmn/{id}")
+    @ApiOperation(value = "导出模型部署文件")
+    public DemoVO getModelBpmn(@PathVariable("id") String id, HttpServletResponse response) {
+
+        Model model = this.repositoryService.getModel(id);
+        byte[] modelEditorSource = this.repositoryService.getModelEditorSource(model.getId());
+        String filename = model.getName() + ".bpmn";
+
+        try {
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(filename, "Utf-8"));
+            response.setContentLength(modelEditorSource.length);
+            BufferedOutputStream outStream;
+            outStream = new BufferedOutputStream(response.getOutputStream());
+            outStream.write(modelEditorSource, 0, modelEditorSource.length);
+            outStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return DemoVO.success();
+    }
 }

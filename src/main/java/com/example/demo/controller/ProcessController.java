@@ -15,7 +15,9 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,23 @@ public class ProcessController {
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.taskService = taskService;
+    }
+
+    @ApiOperation(value = "上传文件部署流程")
+    @PostMapping
+    public DemoVO publication(@RequestParam("file") MultipartFile file, String name) {
+        Deployment leave = null;
+        try {
+            leave = this.repositoryService
+                    .createDeployment()
+                    .addInputStream(file.getOriginalFilename(), file.getInputStream())
+                    .name(name)
+                    .deploy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(leave.getName());
+        return DemoVO.success(leave);
     }
 
     @ApiOperation(value = "根据Key启动流程")
@@ -86,8 +105,6 @@ public class ProcessController {
         }
         return DemoVO.success(processes);
     }
-
-
 
 
 }
